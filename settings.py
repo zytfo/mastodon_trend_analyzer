@@ -63,3 +63,6 @@ INSTANCES_SOCIAL_HEADERS = {
 
 MASTODON_INSTANCE_ENDPOINT = os.environ.get("MASTODON_INSTANCE_ENDPOINT")
 MASTODON_INSTANCE_ACCESS_TOKEN = os.environ.get("MASTODON_INSTANCE_ACCESS_TOKEN")
+
+# retrieve alive, open to register and with min number of active users mastodon instances
+MASTODON_UPDATE_INSTANCE_ENDPOINT = INSTANCES_SOCIAL_ENDPOINT + "/instances/list?include_closed=false&count=0&min_active_users=500&include_down=false"

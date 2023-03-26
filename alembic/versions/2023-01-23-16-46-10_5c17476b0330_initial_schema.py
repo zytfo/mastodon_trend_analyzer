@@ -77,10 +77,10 @@ def upgrade() -> None:
 
     op.create_table(
         "statuses",
-        sa.Column("id", sa.String(length=18), nullable=False, comment="Status ID"),
+        sa.Column("id", sa.BigInteger(), nullable=False, comment="Status ID"),
         sa.Column("created_at", sa.DateTime(), nullable=True, comment="Created At"),
-        sa.Column("in_reply_to_id", sa.Integer(), nullable=True, comment="In Reply To ID"),
-        sa.Column("in_reply_to_account_id", sa.Integer(), nullable=True, comment="In Reply To Account ID"),
+        sa.Column("in_reply_to_id", sa.BigInteger(), nullable=True, comment="In Reply To ID"),
+        sa.Column("in_reply_to_account_id", sa.BigInteger(), nullable=True, comment="In Reply To Account ID"),
         sa.Column("sensitive", sa.Boolean(), nullable=True, comment="Sensitive"),
         sa.Column("spoiler_text", sa.String(), nullable=True, comment="Spoiler Text"),
         sa.Column("visibility", sa.String(), nullable=True, comment="Visibility"),
@@ -92,7 +92,7 @@ def upgrade() -> None:
         sa.Column("favourites_count", sa.Integer(), nullable=True, comment="Favourites Count"),
         sa.Column("edited_at", sa.DateTime(), nullable=True, comment="Edited At"),
         sa.Column("content", sa.String(), nullable=True, comment="Content"),
-        sa.Column('tags', postgresql.ARRAY(sa.String), nullable=True),
+        sa.Column("tags", postgresql.ARRAY(sa.String), nullable=True),
         sa.PrimaryKeyConstraint("id"),
         schema="mastodon_service",
     )
