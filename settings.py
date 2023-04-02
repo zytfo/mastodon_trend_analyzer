@@ -66,3 +66,6 @@ MASTODON_INSTANCE_ACCESS_TOKEN = os.environ.get("MASTODON_INSTANCE_ACCESS_TOKEN"
 
 # retrieve alive, open to register and with min number of active users mastodon instances
 MASTODON_UPDATE_INSTANCE_ENDPOINT = INSTANCES_SOCIAL_ENDPOINT + "/instances/list?include_closed=false&count=0&min_active_users=500&include_down=false"
+
+# retrieve the list of current trends
+MASTODON_SOCIAL_TRENDS_ENDPOINT = MASTODON_INSTANCE_ENDPOINT + "/api/v1/trends/tags?limit=20"

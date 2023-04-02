@@ -97,8 +97,19 @@ def upgrade() -> None:
         schema="mastodon_service",
     )
 
+    op.create_table(
+        "trends",
+        sa.Column("id", sa.Integer(), nullable=False, comment="Trend ID"),
+        sa.Column("name", sa.String(), nullable=True, comment="Trend Name"),
+        sa.Column("url", sa.String(), nullable=True, comment="Trend URL"),
+        sa.Column("uses_in_last_seven_days", sa.Integer(), nullable=True, comment="Visibility"),
+        sa.PrimaryKeyConstraint("id"),
+        schema="mastodon_service",
+    )
+
 
 def downgrade() -> None:
+    op.drop_table("trends", schema="mastodon_service")
     op.drop_table("statuses", schema="mastodon_service")
     op.drop_table("accounts", schema="mastodon_service")
     op.drop_table("instances", schema="mastodon_service")
