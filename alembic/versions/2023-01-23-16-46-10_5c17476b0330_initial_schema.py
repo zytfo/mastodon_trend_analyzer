@@ -53,7 +53,7 @@ def upgrade() -> None:
 
     op.create_table(
         "accounts",
-        sa.Column("id", sa.Integer(), nullable=False, comment="Account ID"),
+        sa.Column("id", sa.BigInteger(), nullable=False, comment="Account ID"),
         sa.Column("username", sa.String(), nullable=True, comment="Username"),
         sa.Column("acct", sa.String(), nullable=True, comment="Acct"),
         sa.Column("display_name", sa.String(), nullable=True, comment="Display Name"),
@@ -74,6 +74,8 @@ def upgrade() -> None:
         sa.Column("last_status_at", sa.DateTime(), nullable=True, comment="Last Status At"),
         schema="mastodon_service",
     )
+
+    op.create_index("accounts_acct_index", "accounts", ["acct"], unique=True, schema="mastodon_service")
 
     op.create_table(
         "statuses",
@@ -102,13 +104,27 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False, comment="Trend ID"),
         sa.Column("name", sa.String(), nullable=True, comment="Trend Name"),
         sa.Column("url", sa.String(), nullable=True, comment="Trend URL"),
-        sa.Column("uses_in_last_seven_days", sa.Integer(), nullable=True, comment="Visibility"),
+        sa.Column("uses_in_last_seven_days", sa.Integer(), nullable=True, comment="Uses in Last Seven Days"),
         sa.PrimaryKeyConstraint("id"),
         schema="mastodon_service",
     )
 
+    op.create_table(
+        "suspicious_trends",
+        sa.Column("id", sa.Integer(), nullable=False, comment="Suspicious Trend ID"),
+        sa.Column("name", sa.String(), nullable=True, comment="Suspicious Trend Name"),
+        sa.Column("url", sa.String(), nullable=False, comment="Suspicious Trend URL"),
+        sa.Column("uses_in_last_seven_days", sa.Integer(), nullable=True, comment="Uses in Last Seven Days"),
+        sa.Column("number_of_accounts", sa.Integer(), nullable=True, comment="The Number of Accounts Uses This Tag"),
+        sa.PrimaryKeyConstraint("id"),
+        schema="mastodon_service",
+    )
+
+    op.create_index("suspicious_trends_url_index", "suspicious_trends", ["url"], unique=True, schema="mastodon_service")
+
 
 def downgrade() -> None:
+    op.drop_table("suspicious_trends", schema="mastodon_service")
     op.drop_table("trends", schema="mastodon_service")
     op.drop_table("statuses", schema="mastodon_service")
     op.drop_table("accounts", schema="mastodon_service")

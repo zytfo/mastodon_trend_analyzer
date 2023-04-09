@@ -24,6 +24,7 @@ sanic-jwt = "^1.8.0"
 pydantic-sqlalchemy = "^0.0.9"
 mastodon-py = "^1.8.0"
 pytz = "^2022.7.1"
+httpx = "^0.23.3"
 
 
 [tool.poetry.group.test.dependencies]

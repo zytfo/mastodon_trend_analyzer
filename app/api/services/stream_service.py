@@ -9,8 +9,10 @@ from sqlalchemy import insert
 # project
 import settings
 from app.api.models.status_model import StatusModel
-from app.api.services.trends import check_if_trend_exist
+from app.api.services.trends_service import check_if_trend_exist, create_or_update_account, \
+    create_or_update_suspicious_trend
 from app.core.database import ScopedSession
+from app.core.helpers.mastodon_social_client import HTTPXMastodonInstanceServiceClient
 
 mastodon_instance = Mastodon(
     access_token=settings.MASTODON_INSTANCE_ACCESS_TOKEN,
@@ -28,9 +30,7 @@ def save_status(session: ScopedSession, status: dict):
 class Listener(mastodon.StreamListener):
 
     def on_update(self, status):
-        # print(status)
         status.pop("reblog", None)
-        # status.pop("account", None)
         status.pop("media_attachments", None)
         status.pop("mentions", None)
         status.pop("emojis", None)
@@ -43,10 +43,30 @@ class Listener(mastodon.StreamListener):
         if len(status["tags"]) != 0:
             with ScopedSession() as session:
                 for tag in status["tags"]:
+                    # check if this is an existing trend
                     trend = check_if_trend_exist(session=session, name=tag["name"])
 
-                    # if no trend there is no such trend in the database and this is a new one
+                    # if no trend, this is probably a new one
                     if not trend:
+                        # get info about this trend
+                        with HTTPXMastodonInstanceServiceClient as client:  # type: HTTPXMastodonInstanceServiceClient
+                            # get aggregated info about tag in last seven days
+                            url, accounts, uses, errors = client.get_tag_info(tag=tag["name"])
+
+                            # if an error happened, just continue
+                            if errors:
+                                continue
+
+                            # check trend info: if less than 100 account and less than 100 uses, it might a suspicious trend, so write in the database
+                            if accounts <= 100 and uses <= 100:
+                                create_or_update_suspicious_trend(
+                                    session=session,
+                                    name=tag["name"],
+                                    url=url,
+                                    uses_in_last_seven_days=uses,
+                                    number_of_accounts=accounts,
+                                )
+
                         # get post author
                         account = status["account"]
 
@@ -56,17 +76,32 @@ class Listener(mastodon.StreamListener):
                         # get time difference to check
                         difference = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
 
-                        # check newly registered user
-                        if created_at >= difference:
-                            print("POSSIBLE ARTIFICIAL TREND AND THIS USER IS BOT!")
-                            print("Account: " + account["username"])
-                            print("Trend: " + tag["name"])
+                        # check if a user was registered less than a month ago, has less than 1000 followers and has less than 100 statuses
+                        if created_at >= difference \
+                                and account["followers_count"] <= 1000 \
+                                and account["statuses_count"]:
+                            # get rid of unnecessary fields for account model
+                            account.pop("emojis", None)
+                            account.pop("fields", None)
+                            account.pop("noindex", None)
+                            account.pop("roles", None)
+
+                            # create a new account entity or update in case of existence
+                            create_or_update_account(session=session, account=account)
+
+                            print("\nPROBABLY AN ARTIFICIAL TREND AND THIS USER MIGHT BE A BOT!")
+                            print("ACCOUNT ACCT: " + account["acct"])
+                            print("ACCOUNT URL: " + account["url"])
+                            print("ACCOUNT CREATED_AT: " + str(account["created_at"]))
+                            print("ACCOUNT FOLLOWERS_COUNT: " + str(account["followers_count"]))
+                            print("ACCOUNT FOLLOWING_COUNT: " + str(account["following_count"]))
+                            print("ACCOUNT STATUSES_COUNT: " + str(account["statuses_count"]))
+                            print("TREND NAME: " + tag["name"])
+                            print("TREND URL: " + tag["url"])
 
                 status.pop("tags", None)
                 status.pop("account", None)
                 save_status(session=session, status=status)
-
-            # print(json.dumps(status["tags"], indent=1))
 
 
 async def listen_mastodon_stream():
