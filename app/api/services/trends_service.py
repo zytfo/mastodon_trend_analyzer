@@ -63,6 +63,12 @@ def check_if_trend_exist(session: ScopedSession, name: str):
     return result.scalars().one_or_none()
 
 
+def check_if_suspicious_trend_exist(session: ScopedSession, name: str):
+    query = select(SuspiciousTrendModel).filter(SuspiciousTrendModel.name == name)
+    result = session.execute(query)
+    return result.scalars().one_or_none()
+
+
 def check_if_account_exist(session: ScopedSession, acct: str):
     query = select(AccountModel).filter(AccountModel.acct == acct)
     result = session.execute(query)

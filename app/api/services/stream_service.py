@@ -10,7 +10,7 @@ from sqlalchemy import insert
 import settings
 from app.api.models.status_model import StatusModel
 from app.api.services.trends_service import check_if_trend_exist, create_or_update_account, \
-    create_or_update_suspicious_trend
+    create_or_update_suspicious_trend, check_if_suspicious_trend_exist
 from app.core.database import ScopedSession
 from app.core.helpers.mastodon_social_client import HTTPXMastodonInstanceServiceClient
 
@@ -43,61 +43,66 @@ class Listener(mastodon.StreamListener):
         if len(status["tags"]) != 0:
             with ScopedSession() as session:
                 for tag in status["tags"]:
-                    # check if this is an existing trend
-                    trend = check_if_trend_exist(session=session, name=tag["name"])
+                    # get post author
+                    account = status["account"]
 
-                    # if no trend, this is probably a new one
-                    if not trend:
-                        # get info about this trend
-                        with HTTPXMastodonInstanceServiceClient as client:  # type: HTTPXMastodonInstanceServiceClient
-                            # get aggregated info about tag in last seven days
-                            url, accounts, uses, errors = client.get_tag_info(tag=tag["name"])
+                    # get author register date
+                    created_at = account["created_at"].strftime("%Y-%m-%d %H:%M:%S")
 
-                            # if an error happened, just continue
-                            if errors:
-                                continue
+                    # get time difference to check
+                    difference = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
 
-                            # check trend info: if less than 100 account and less than 100 uses, it might a suspicious trend, so write in the database
-                            if accounts <= 100 and uses <= 100:
-                                create_or_update_suspicious_trend(
-                                    session=session,
-                                    name=tag["name"],
-                                    url=url,
-                                    uses_in_last_seven_days=uses,
-                                    number_of_accounts=accounts,
-                                )
+                    # check if a user was registered less than a month ago, has less than 1000 followers and has less than 100 statuses
+                    if created_at >= difference \
+                            and account["followers_count"] <= 1000 \
+                            and account["statuses_count"] <= 100:
+                        # get rid of unnecessary fields for account model
+                        account.pop("emojis", None)
+                        account.pop("fields", None)
+                        account.pop("noindex", None)
+                        account.pop("roles", None)
 
-                        # get post author
-                        account = status["account"]
+                        # create a new account entity or update in case of existence
+                        create_or_update_account(session=session, account=account)
 
-                        # get author register date
-                        created_at = account["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+                        # check if this is an existing trend
+                        trend = check_if_trend_exist(session=session, name=tag["name"])
 
-                        # get time difference to check
-                        difference = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+                        # if no trend, this is probably a new one
+                        if not trend:
+                            # try to find this trend in the database, if not - retrieve information from API
+                            suspicious_trend = check_if_suspicious_trend_exist(session=session, name=tag["name"])
 
-                        # check if a user was registered less than a month ago, has less than 1000 followers and has less than 100 statuses
-                        if created_at >= difference \
-                                and account["followers_count"] <= 1000 \
-                                and account["statuses_count"]:
-                            # get rid of unnecessary fields for account model
-                            account.pop("emojis", None)
-                            account.pop("fields", None)
-                            account.pop("noindex", None)
-                            account.pop("roles", None)
+                            # retrieve info if trend does not exist
+                            if not suspicious_trend:
+                                # get info about this trend
+                                with HTTPXMastodonInstanceServiceClient as client:  # type: HTTPXMastodonInstanceServiceClient
+                                    # get aggregated info about tag in last seven days
+                                    url, accounts, uses, errors = client.get_tag_info(tag=tag["name"])
 
-                            # create a new account entity or update in case of existence
-                            create_or_update_account(session=session, account=account)
+                                    # if an error happened, just continue
+                                    if errors:
+                                        continue
 
-                            print("\nPROBABLY AN ARTIFICIAL TREND AND THIS USER MIGHT BE A BOT!")
-                            print("ACCOUNT ACCT: " + account["acct"])
-                            print("ACCOUNT URL: " + account["url"])
-                            print("ACCOUNT CREATED_AT: " + str(account["created_at"]))
-                            print("ACCOUNT FOLLOWERS_COUNT: " + str(account["followers_count"]))
-                            print("ACCOUNT FOLLOWING_COUNT: " + str(account["following_count"]))
-                            print("ACCOUNT STATUSES_COUNT: " + str(account["statuses_count"]))
-                            print("TREND NAME: " + tag["name"])
-                            print("TREND URL: " + tag["url"])
+                                    # check trend info: if less than 100 account and less than 100 uses, it might a suspicious trend, so write in the database
+                                    if accounts <= 100 and uses <= 100:
+                                        create_or_update_suspicious_trend(
+                                            session=session,
+                                            name=tag["name"],
+                                            url=url,
+                                            uses_in_last_seven_days=uses,
+                                            number_of_accounts=accounts,
+                                        )
+
+                        print("\nPROBABLY AN ARTIFICIAL TREND AND THIS USER MIGHT BE A BOT!")
+                        print("ACCOUNT ACCT: " + account["acct"])
+                        print("ACCOUNT URL: " + account["url"])
+                        print("ACCOUNT CREATED_AT: " + str(account["created_at"]))
+                        print("ACCOUNT FOLLOWERS_COUNT: " + str(account["followers_count"]))
+                        print("ACCOUNT FOLLOWING_COUNT: " + str(account["following_count"]))
+                        print("ACCOUNT STATUSES_COUNT: " + str(account["statuses_count"]))
+                        print("TREND NAME: " + tag["name"])
+                        print("TREND URL: " + tag["url"])
 
                 status.pop("tags", None)
                 status.pop("account", None)
