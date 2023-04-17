@@ -69,3 +69,23 @@ async def update_instances(session: AsyncSession, url: str):
                         result=[InstanceSerializer(instance).marshal() for instance in retrieved_instances])
                 else:
                     return rest_helper.on_write_error(errors={"error": "Something went wrong"})
+
+
+async def get_instances(session: AsyncSession, limit: int, offset: int):
+    query = """
+            SELECT count(DISTINCT mastodon_service.suspicious_trends.instance_url) 
+            FROM mastodon_service.suspicious_trends
+            """
+
+    result = await session.execute(query)
+    total_count = result.scalars().one()
+
+    query = """
+            SELECT DISTINCT mastodon_service.suspicious_trends.instance_url
+            FROM mastodon_service.suspicious_trends
+            LIMIT '%s'
+            OFFSET '%s'
+            """ % (limit, offset)
+
+    result = await session.execute(query)
+    return result.scalars().all(), total_count if total_count else 0, limit, offset

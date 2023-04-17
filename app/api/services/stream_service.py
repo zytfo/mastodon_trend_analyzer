@@ -1,4 +1,5 @@
 # stdlib
+import re
 from datetime import datetime, timedelta
 
 import mastodon
@@ -56,15 +57,6 @@ class Listener(mastodon.StreamListener):
                     if created_at >= difference \
                             and account["followers_count"] <= 1000 \
                             and account["statuses_count"] <= 100:
-                        # get rid of unnecessary fields for account model
-                        account.pop("emojis", None)
-                        account.pop("fields", None)
-                        account.pop("noindex", None)
-                        account.pop("roles", None)
-
-                        # create a new account entity or update in case of existence
-                        create_or_update_account(session=session, account=account)
-
                         # check if this is an existing trend
                         trend = check_if_trend_exist(session=session, name=tag["name"])
 
@@ -72,6 +64,17 @@ class Listener(mastodon.StreamListener):
                         if not trend:
                             # try to find this trend in the database, if not - retrieve information from API
                             suspicious_trend = check_if_suspicious_trend_exist(session=session, name=tag["name"])
+
+                            # get mastodon instance url
+                            instance_url = account["url"]
+
+                            # if mastodon.social in url, get it
+                            if "mastodon.social" in instance_url:
+                                instance_url = "https://mastodon.social"
+                            # get the first element of the array if it contains https
+                            else:
+                                instance_url = re.findall(r'^(https?:\/\/[\w.-]+)', instance_url)
+                                instance_url = instance_url[0]
 
                             # retrieve info if trend does not exist
                             if not suspicious_trend:
@@ -86,23 +89,37 @@ class Listener(mastodon.StreamListener):
 
                                     # check trend info: if less than 100 account and less than 100 uses, it might a suspicious trend, so write in the database
                                     if accounts <= 100 and uses <= 100:
+                                        # get rid of unnecessary fields for account model
+                                        account.pop("emojis", None)
+                                        account.pop("fields", None)
+                                        account.pop("noindex", None)
+                                        account.pop("roles", None)
+
+                                        # create a new account entity or update in case of existence
+                                        create_or_update_account(
+                                            session=session,
+                                            account=account,
+                                            instance_url=instance_url
+                                        )
+
                                         create_or_update_suspicious_trend(
                                             session=session,
                                             name=tag["name"],
                                             url=url,
                                             uses_in_last_seven_days=uses,
                                             number_of_accounts=accounts,
+                                            instance_url=instance_url
                                         )
 
-                        print("\nPROBABLY AN ARTIFICIAL TREND AND THIS USER MIGHT BE A BOT!")
-                        print("ACCOUNT ACCT: " + account["acct"])
-                        print("ACCOUNT URL: " + account["url"])
-                        print("ACCOUNT CREATED_AT: " + str(account["created_at"]))
-                        print("ACCOUNT FOLLOWERS_COUNT: " + str(account["followers_count"]))
-                        print("ACCOUNT FOLLOWING_COUNT: " + str(account["following_count"]))
-                        print("ACCOUNT STATUSES_COUNT: " + str(account["statuses_count"]))
-                        print("TREND NAME: " + tag["name"])
-                        print("TREND URL: " + tag["url"])
+                                        print("\nPROBABLY AN ARTIFICIAL TREND AND THIS USER MIGHT BE A BOT!")
+                                        print("ACCOUNT ACCT: " + account["acct"])
+                                        print("ACCOUNT URL: " + account["url"])
+                                        print("ACCOUNT CREATED_AT: " + str(account["created_at"]))
+                                        print("ACCOUNT FOLLOWERS_COUNT: " + str(account["followers_count"]))
+                                        print("ACCOUNT FOLLOWING_COUNT: " + str(account["following_count"]))
+                                        print("ACCOUNT STATUSES_COUNT: " + str(account["statuses_count"]))
+                                        print("TREND NAME: " + tag["name"])
+                                        print("TREND URL: " + tag["url"])
 
                 status.pop("tags", None)
                 status.pop("account", None)

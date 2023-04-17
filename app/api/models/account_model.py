@@ -36,3 +36,4 @@ class AccountModel(BaseModel):
     following_count = Column(Integer(), nullable=True)
     statuses_count = Column(Integer(), nullable=True)
     last_status_at = Column(DateTime(), nullable=True)
+    instance_url = Column(String(), nullable=True)

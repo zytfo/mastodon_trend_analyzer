@@ -38,12 +38,14 @@ async def get_suspicious_trends(request: Request) -> HTTPResponse:
     session = request.ctx.session
     limit = request.args.get("limit", default=20)
     offset = request.args.get("offset", default=0)
+    instance = request.args.get("instance", default=None)
 
     async with session.begin():
         trends, total_count, limit, offset = await get_suspicious_trends_internal(
             session=session,
             limit=limit,
-            offset=offset
+            offset=offset,
+            instance=instance
         )
 
         return rest_helper.on_write_json(

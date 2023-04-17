@@ -72,10 +72,13 @@ def upgrade() -> None:
         sa.Column("following_count", sa.Integer(), nullable=True, comment="Following Count"),
         sa.Column("statuses_count", sa.Integer(), nullable=True, comment="Statuses Count"),
         sa.Column("last_status_at", sa.DateTime(), nullable=True, comment="Last Status At"),
+        sa.Column("instance_url", sa.String(), nullable=True, comment="Instance URL"),
         schema="mastodon_service",
     )
 
     op.create_index("accounts_acct_index", "accounts", ["acct"], unique=True, schema="mastodon_service")
+    op.create_index("accounts_instance_url_index", "accounts", ["instance_url"], unique=False,
+                    schema="mastodon_service")
 
     op.create_table(
         "statuses",
@@ -116,11 +119,14 @@ def upgrade() -> None:
         sa.Column("url", sa.String(), nullable=False, comment="Suspicious Trend URL"),
         sa.Column("uses_in_last_seven_days", sa.Integer(), nullable=True, comment="Uses in Last Seven Days"),
         sa.Column("number_of_accounts", sa.Integer(), nullable=True, comment="The Number of Accounts Uses This Tag"),
+        sa.Column("instance_url", sa.String(), nullable=True, comment="Instance URL"),
         sa.PrimaryKeyConstraint("id"),
         schema="mastodon_service",
     )
 
     op.create_index("suspicious_trends_url_index", "suspicious_trends", ["url"], unique=True, schema="mastodon_service")
+    op.create_index("suspicious_trends_instance_url_index", "suspicious_trends", ["instance_url"], unique=False,
+                    schema="mastodon_service")
 
 
 def downgrade() -> None:

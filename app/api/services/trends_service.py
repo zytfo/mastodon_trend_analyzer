@@ -75,7 +75,7 @@ def check_if_account_exist(session: ScopedSession, acct: str):
     return result.scalars().one_or_none()
 
 
-def create_or_update_account(session: ScopedSession, account: dict):
+def create_or_update_account(session: ScopedSession, account: dict, instance_url: str):
     insert_stmt = insert(AccountModel).values(**account)
 
     insert_stmt = insert_stmt.on_conflict_do_update(
@@ -95,6 +95,7 @@ def create_or_update_account(session: ScopedSession, account: dict):
             following_count=account["following_count"],
             statuses_count=account["statuses_count"],
             last_status_at=account["last_status_at"],
+            instance_url=instance_url
         )
     )
 
@@ -106,14 +107,16 @@ def create_or_update_suspicious_trend(
         name: str,
         url: str,
         uses_in_last_seven_days: int,
-        number_of_accounts: int
+        number_of_accounts: int,
+        instance_url: str
 ):
     insert_stmt = insert(SuspiciousTrendModel).values(
         dict(
             name=name,
             url=url,
             uses_in_last_seven_days=uses_in_last_seven_days,
-            number_of_accounts=number_of_accounts
+            number_of_accounts=number_of_accounts,
+            instance_url=instance_url
         )
     )
 
@@ -139,12 +142,25 @@ async def get_global_trends(session: AsyncSession, limit: int, offset: int):
     return result.scalars().all(), total_count, limit, offset
 
 
-async def get_suspicious_trends_internal(session: AsyncSession, limit: int, offset: int):
-    query = select([func.count(SuspiciousTrendModel.id)])
+async def get_suspicious_trends_internal(session: AsyncSession, limit: int, offset: int, instance: str = None):
+    if instance:
+        query = select([func.count(SuspiciousTrendModel.id)]) \
+            .filter(SuspiciousTrendModel.instance_url.ilike("%" + instance + "%"))
+    else:
+        query = select([func.count(SuspiciousTrendModel.id)])
 
     result = await session.execute(query)
     total_count = result.scalars().one()
 
-    query = select(SuspiciousTrendModel).limit(limit).offset(offset)
+    if instance:
+        query = select(SuspiciousTrendModel) \
+            .filter(SuspiciousTrendModel.instance_url.ilike("%" + instance + "%")) \
+            .limit(limit) \
+            .offset(offset)
+    else:
+        query = select(SuspiciousTrendModel) \
+            .limit(limit) \
+            .offset(offset)
+
     result = await session.execute(query)
     return result.scalars().all(), total_count, limit, offset
