@@ -11,7 +11,7 @@ This project aims to help Mastodon-instance owners identify suspicious trends an
 - Production-ready asynchronous backend service with the ability to handle requests from multiple clients in parallel simultaneously
 
 ## How Does It Work? 
-
+![Working Flow](mastodon.png)
 
 ## Tech Stack
 
