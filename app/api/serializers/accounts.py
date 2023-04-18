@@ -27,4 +27,5 @@ class AccountSerializer(SqlalchemyEntitySerializer):
             "following_count",
             "statuses_count",
             "last_status_at",
+            "instance_url"
         )
