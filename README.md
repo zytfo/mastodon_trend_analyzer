@@ -1,5 +1,5 @@
 # Mastodon Fediverse Suspicious Trends and Accounts Analyser
-##### [Artur Khaialiev](a12020032@unet.univie.ac.at) (a12020032), P2 Course at the University of Vienna
+### [Artur Khaialiev](a12020032@unet.univie.ac.at) (a12020032), P2 Course at the University of Vienna. Mentor: Paul Fuxjäger
 
 ## Goal
 This project aims to help Mastodon-instance owners identify suspicious trends and accounts within a federated timeline. Instance owners can access the public service and filter the aggregated data to discover insights about their or others' servers.
@@ -9,6 +9,9 @@ This project aims to help Mastodon-instance owners identify suspicious trends an
 - Analyze data about suspicious tags and accounts within a federated timeline and aggregate data in the database
 - Provide public endpoints to gather aggregated data with filtration and pagination
 - Production-ready asynchronous backend service with the ability to handle requests from multiple clients in parallel simultaneously
+
+## How Does It Work? 
+
 
 ## Tech Stack
 
@@ -76,6 +79,7 @@ Optional parameters:
 - `offset` - 0 by default
 - `instance` - instance URL filter
 e. g. `http://localhost:8000/api/v1/accounts?limit=10&offset=0&instance=anonsys.net`
+___
 **Response example**:
 ```
 {
@@ -114,6 +118,7 @@ Optional parameters:
 - `limit` - 20 by default
 - `offset` - 0 by default
 e. g. `http://localhost:8000/api/v1/instances?limit=10&offset=0`
+___
 **Response example**:
 ```
 {
@@ -141,6 +146,7 @@ Optional parameters:
 - `offset` - 0 by default
 - `instance` - instance URL filter
 e. g. `http://localhost:8000/api/v1/trends?limit=2&offset=0`
+___
 **Response example**:
 ```
 {
@@ -171,6 +177,7 @@ Optional parameters:
 - `offset` - 0 by default
 - `instance` - instance URL filter
 e. g. `http://localhost:8000/api/v1/suspicious_trends?limit=10&offset=0&instance=anonsys.net`
+___
 **Response example**:
 ```
 {
