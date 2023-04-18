@@ -25,12 +25,14 @@ async def get_suspicious_accounts(request: Request) -> HTTPResponse:
     session = request.ctx.session
     limit = request.args.get("limit", default=100)
     offset = request.args.get("offset", default=0)
+    instance = request.args.get("instance", default=None)
 
     async with session.begin():
         accounts, total_count, limit, offset = await get_accounts(
             session=session,
             limit=limit,
-            offset=offset
+            offset=offset,
+            instance=instance
         )
 
         return rest_helper.on_write_json(
