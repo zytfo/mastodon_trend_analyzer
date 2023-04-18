@@ -78,8 +78,11 @@ Optional parameters:
 - `limit` - 100 by default
 - `offset` - 0 by default
 - `instance` - instance URL filter
-e. g. `http://localhost:8000/api/v1/accounts?limit=10&offset=0&instance=anonsys.net`
 ___
+**Request example**:
+
+`http://localhost:8000/api/v1/accounts?limit=10&offset=0&instance=anonsys.net`
+
 **Response example**:
 ```
 {
@@ -116,9 +119,12 @@ ___
 2. `GET` `/instances` - get the list of all captured instances where suspicious trends or accounts exist.
 Optional parameters: 
 - `limit` - 20 by default
-- `offset` - 0 by default
-e. g. `http://localhost:8000/api/v1/instances?limit=10&offset=0`
+- `offset` - 0 by default 
 ___
+**Request example**:
+
+`http://localhost:8000/api/v1/instances?limit=10&offset=0`
+
 **Response example**:
 ```
 {
@@ -145,8 +151,11 @@ Optional parameters:
 - `limit` - 20 by default
 - `offset` - 0 by default
 - `instance` - instance URL filter
-e. g. `http://localhost:8000/api/v1/trends?limit=2&offset=0`
 ___
+**Request example**:
+
+`http://localhost:8000/api/v1/trends?limit=2&offset=0`
+
 **Response example**:
 ```
 {
@@ -176,8 +185,11 @@ Optional parameters:
 - `limit` - 20 by default
 - `offset` - 0 by default
 - `instance` - instance URL filter
-e. g. `http://localhost:8000/api/v1/suspicious_trends?limit=10&offset=0&instance=anonsys.net`
 ___
+**Request example**:
+
+`http://localhost:8000/api/v1/suspicious_trends?limit=10&offset=0&instance=anonsys.net`
+
 **Response example**:
 ```
 {
