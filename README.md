@@ -8,6 +8,7 @@ This project aims to help Mastodon-instance owners identify suspicious trends an
 - Read a stream of a federated timeline in real-time using [mastodon.social](https://mastodon.social/) public API
 - Analyze data about suspicious tags and accounts within a federated timeline and aggregate data in the database
 - Provide public endpoints to gather aggregated data with filtration and pagination
+- Post content similarity check using nltk features and cosine similarity
 - Production-ready asynchronous backend service with the ability to handle requests from multiple clients in parallel simultaneously
 
 ## How Does It Work? 
@@ -23,6 +24,7 @@ This project uses the following frameworks and libraries:
 - [SQLAlchemy](https://www.sqlalchemy.org/) - SQL ORM
 - [Mastodon.py](https://mastodonpy.readthedocs.io/en/stable/) - Python library to access Mastodon instances
 - [httpx](https://www.python-httpx.org/) - Python HTTP-client
+- [nltk](https://www.nltk.org/) - Natural Language Toolkit
 
 ## Installation
 
@@ -200,7 +202,8 @@ ___
             "url": "https://mastodon.social/tags/auto",
             "uses_in_last_seven_days": 94,
             "number_of_accounts": 79,
-            "instance_url": "https://anonsys.net"
+            "instance_url": "https://anonsys.net",
+            "number_of_similar_statuses": 0
         },
         {
             "id": 10,
@@ -208,7 +211,8 @@ ___
             "url": "https://mastodon.social/tags/augsburg",
             "uses_in_last_seven_days": 62,
             "number_of_accounts": 22,
-            "instance_url": "https://anonsys.net"
+            "instance_url": "https://anonsys.net",
+            "number_of_similar_statuses": 0
         },
         {
             "id": 11,
@@ -216,7 +220,8 @@ ___
             "url": "https://mastodon.social/tags/oktoberfest",
             "uses_in_last_seven_days": 3,
             "number_of_accounts": 3,
-            "instance_url": "https://anonsys.net"
+            "instance_url": "https://anonsys.net",
+            "number_of_similar_statuses": 0
         },
         {
             "id": 12,
@@ -224,7 +229,8 @@ ___
             "url": "https://mastodon.social/tags/wolfganghubschle",
             "uses_in_last_seven_days": 1,
             "number_of_accounts": 1,
-            "instance_url": "https://anonsys.net"
+            "instance_url": "https://anonsys.net",
+            "number_of_similar_statuses": 3
         },
         {
             "id": 13,
@@ -232,7 +238,8 @@ ___
             "url": "https://mastodon.social/tags/augsburgerplarrer",
             "uses_in_last_seven_days": 6,
             "number_of_accounts": 3,
-            "instance_url": "https://anonsys.net"
+            "instance_url": "https://anonsys.net",
+            "number_of_similar_statuses": 0
         },
         {
             "id": 14,
@@ -240,7 +247,8 @@ ___
             "url": "https://mastodon.social/tags/schattenseite",
             "uses_in_last_seven_days": 1,
             "number_of_accounts": 1,
-            "instance_url": "https://anonsys.net"
+            "instance_url": "https://anonsys.net",
+            "number_of_similar_statuses": 1
         }
     ],
     "success": true,
