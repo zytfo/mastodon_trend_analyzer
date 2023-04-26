@@ -14,6 +14,9 @@ This project aims to help Mastodon-instance owners identify suspicious trends an
 ## How Does It Work? 
 ![Working Flow](mastodon.png)
 
+## Database Schema
+![Database Schema](service_database_schema.png)
+
 ## Tech Stack
 
 This project uses the following frameworks and libraries:
