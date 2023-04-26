@@ -102,6 +102,8 @@ def upgrade() -> None:
         schema="mastodon_service",
     )
 
+    op.create_index("statuses_tags_index", "statuses", ["tags"], postgresql_using="gin", schema="mastodon_service")
+
     op.create_table(
         "trends",
         sa.Column("id", sa.Integer(), nullable=False, comment="Trend ID"),
@@ -120,6 +122,7 @@ def upgrade() -> None:
         sa.Column("uses_in_last_seven_days", sa.Integer(), nullable=True, comment="Uses in Last Seven Days"),
         sa.Column("number_of_accounts", sa.Integer(), nullable=True, comment="The Number of Accounts Uses This Tag"),
         sa.Column("instance_url", sa.String(), nullable=True, comment="Instance URL"),
+        sa.Column("number_of_similar_statuses", sa.Integer(), default=0, nullable=False, comment="The number of similar posts"),
         sa.PrimaryKeyConstraint("id"),
         schema="mastodon_service",
     )

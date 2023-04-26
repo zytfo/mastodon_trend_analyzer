@@ -11,7 +11,9 @@ from sqlalchemy import insert
 import settings
 from app.api.models.status_model import StatusModel
 from app.api.services.trends_service import check_if_trend_exist, create_or_update_account, \
-    create_or_update_suspicious_trend, check_if_suspicious_trend_exist
+    create_or_update_suspicious_trend, check_if_suspicious_trend_exist, get_statuses_by_tag, \
+    increment_suspicious_trend_number_of_similar_posts
+from app.api.utils.similarity_checker import calculate_cosine_similarity_between_two_statuses
 from app.core.database import ScopedSession
 from app.core.helpers.mastodon_social_client import HTTPXMastodonInstanceServiceClient
 
@@ -42,10 +44,14 @@ class Listener(mastodon.StreamListener):
 
         # check if only tags is more than 0
         if len(status["tags"]) != 0:
+            tags = []
             with ScopedSession() as session:
                 for tag in status["tags"]:
                     # get post author
                     account = status["account"]
+
+                    # add tag to tags array to save status then
+                    tags.append(tag["name"])
 
                     # get author register date
                     created_at = account["created_at"].strftime("%Y-%m-%d %H:%M:%S")
@@ -102,7 +108,8 @@ class Listener(mastodon.StreamListener):
                                             instance_url=instance_url
                                         )
 
-                                        create_or_update_suspicious_trend(
+                                        # create a new suspicious trend entity or update in case of existence
+                                        suspicious_trend = create_or_update_suspicious_trend(
                                             session=session,
                                             name=tag["name"],
                                             url=url,
@@ -121,8 +128,32 @@ class Listener(mastodon.StreamListener):
                                         print("TREND NAME: " + tag["name"])
                                         print("TREND URL: " + tag["url"])
 
+                                        # get statuses with this tag to check for a similar status text
+                                        statuses = get_statuses_by_tag(session=session, tag=tag["name"])
+
+                                        # iterate over all stored statuses by tag
+                                        for stored_status in statuses:
+                                            # get cosine similarity between stored status and a new one
+                                            similarity = calculate_cosine_similarity_between_two_statuses(
+                                                status_content_1=stored_status.content,
+                                                status_content_2=status["content"]
+                                            )
+
+                                            # if similarity >= 0.5, update suspicious trend model with an incremented number_of_similar_posts value
+                                            if similarity >= 0.5:
+                                                increment_suspicious_trend_number_of_similar_posts(
+                                                    session=session,
+                                                    suspicious_trend_id=suspicious_trend.id,
+                                                    number_of_similar_statuses=suspicious_trend.number_of_similar_statuses + 1
+                                                )
+
+                # remove unnecessary, non-parsable elements
                 status.pop("tags", None)
                 status.pop("account", None)
+
+                # add parsed tags to status model to store it in the database
+                status["tags"] = tags
+
                 save_status(session=session, status=status)
 
 

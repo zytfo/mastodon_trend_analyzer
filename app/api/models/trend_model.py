@@ -24,3 +24,4 @@ class SuspiciousTrendModel(BaseModel):
     uses_in_last_seven_days = Column(Integer(), nullable=True)
     number_of_accounts = Column(Integer(), nullable=True)
     instance_url = Column(String(), nullable=True)
+    number_of_similar_statuses = Column(Integer(), nullable=False, default=0)

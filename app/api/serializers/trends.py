@@ -23,5 +23,6 @@ class SuspiciousTrendSerializer(SqlalchemyEntitySerializer):
             "url",
             "uses_in_last_seven_days",
             "number_of_accounts",
-            "instance_url"
+            "instance_url",
+            "number_of_similar_statuses"
         )

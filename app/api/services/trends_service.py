@@ -1,12 +1,13 @@
 # stdlib
 
 import aiohttp
-from sqlalchemy import delete, select, func
+from sqlalchemy import delete, select, func, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import settings
 from app.api.models.account_model import AccountModel
+from app.api.models.status_model import StatusModel
 from app.api.models.trend_model import TrendModel, SuspiciousTrendModel
 from app.api.serializers.trends import TrendSerializer
 from app.core.database import ScopedSession
@@ -118,7 +119,7 @@ def create_or_update_suspicious_trend(
             number_of_accounts=number_of_accounts,
             instance_url=instance_url
         )
-    )
+    ).returning(SuspiciousTrendModel)
 
     insert_stmt = insert_stmt.on_conflict_do_update(
         index_elements=["url"],
@@ -128,7 +129,30 @@ def create_or_update_suspicious_trend(
         )
     )
 
-    return session.execute(insert_stmt)
+    result = session.execute(insert_stmt)
+    result = result.fetchone()
+
+    return result
+
+
+def get_statuses_by_tag(session: ScopedSession, tag: str):
+    query = select(StatusModel).filter(func.array_to_string(StatusModel.tags, ',').ilike(func.any(['%' + tag + '%'])))
+    result = session.execute(query)
+    return result.scalars().all()
+
+
+def increment_suspicious_trend_number_of_similar_posts(
+        session: ScopedSession,
+        suspicious_trend_id: int,
+        number_of_similar_statuses: int
+):
+    query = (
+        update(SuspiciousTrendModel)
+        .values(dict(number_of_similar_statuses=number_of_similar_statuses))
+        .filter(SuspiciousTrendModel.id == suspicious_trend_id)
+    )
+
+    session.execute(query)
 
 
 async def get_global_trends(session: AsyncSession, limit: int, offset: int):

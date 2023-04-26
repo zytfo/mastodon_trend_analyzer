@@ -25,6 +25,8 @@ pydantic-sqlalchemy = "^0.0.9"
 mastodon-py = "^1.8.0"
 pytz = "^2022.7.1"
 httpx = "^0.23.3"
+nltk = "^3.8.1"
+scikit-learn = "^1.2.2"
 
 
 [tool.poetry.group.test.dependencies]

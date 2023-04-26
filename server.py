@@ -5,6 +5,7 @@ from sanic import Sanic
 
 # project
 import settings
+import nltk
 from app.api.controllers import v1
 from app.api.services.instance_service import update_instances
 from app.api.services.stream_service import listen_mastodon_stream
@@ -41,6 +42,7 @@ async def close_session(request, response):
 
 
 def create_app(run=True, fast=False):
+    nltk.download('punkt')
     if run:
         app.run(
             settings.HOST_IP,
