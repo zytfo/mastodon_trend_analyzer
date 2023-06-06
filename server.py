@@ -14,6 +14,10 @@ from app.core.database import base_model_session_ctx, async_session
 
 app = Sanic(__name__)
 
+# add application secret to run on nginx
+app.config.FORWARDED_SECRET = settings.APP_SECRET
+
+
 # update the list of available mastodon instances
 app.add_task(update_instances(session=async_session,
                               url=settings.MASTODON_UPDATE_INSTANCE_ENDPOINT))
@@ -41,7 +45,7 @@ async def close_session(request, response):
         await request.ctx.session.close()
 
 
-def create_app(run=True, fast=False):
+def create_app(run=True, fast=settings.SANIC_FAST):
     nltk.download('punkt')
     if run:
         app.run(

@@ -52,7 +52,6 @@ psycopg2_connection = "postgresql+psycopg2://{0}:{1}@{2}:{3}/{4}".format(
     os.environ.get("DB_DATABASE"),
 )
 
-sanic_fast = os.environ.get("SANIC_FAST", "False") == "False"
 INSTANCES_SOCIAL_ENDPOINT = os.environ.get("INSTANCES_SOCIAL_ENDPOINT")
 INSTANCES_SOCIAL_SECRET = os.environ.get("INSTANCES_SOCIAL_SECRET")
 
@@ -69,3 +68,9 @@ MASTODON_UPDATE_INSTANCE_ENDPOINT = INSTANCES_SOCIAL_ENDPOINT + "/instances/list
 
 # retrieve the list of current trends
 MASTODON_SOCIAL_TRENDS_ENDPOINT = MASTODON_INSTANCE_ENDPOINT + "/api/v1/trends/tags?limit=20"
+
+# application secret key
+APP_SECRET = os.environ.get("APP_SECRET")
+
+# fast mode
+SANIC_FAST = os.environ.get("SANIC_FAST", "True") == "True"
