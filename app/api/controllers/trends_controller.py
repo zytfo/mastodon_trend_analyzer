@@ -7,7 +7,7 @@ from app.api.services.trends_service import get_global_trends, get_suspicious_tr
 from app.core.helpers import rest_helper
 
 trends_blueprint = Blueprint("trends", url_prefix="/trends")
-suspicious_trends_blueprint = Blueprint("suspicious_trends", url_prefix="/suspicious_trends")
+suspicious_trends_blueprint = Blueprint("suspicious_trends", url_prefix="/suspicious-trends")
 
 
 @openapi.definition()
