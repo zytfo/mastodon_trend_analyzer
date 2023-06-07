@@ -1,6 +1,5 @@
 # thirdparty
 from app.api.models.account_model import AccountModel
-from app.api.models.instance_model import InstanceModel
 from app.core.helpers.serializer import SqlalchemyEntitySerializer
 
 

@@ -29,6 +29,12 @@ app.add_task(update_mastodon_trends(session=async_session,
 # start listening mastodon network
 app.add_task(listen_mastodon_stream())
 
+# Add OPTIONS handlers to any route that is missing it
+app.register_listener(setup_options, "before_server_start")
+
+# Fill in CORS headers
+app.register_middleware(add_cors_headers, "response")
+
 app.blueprint(v1)
 
 
