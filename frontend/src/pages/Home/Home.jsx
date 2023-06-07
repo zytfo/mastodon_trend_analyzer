@@ -12,7 +12,7 @@ const Home = () => {
                 <h2><a href="https://github.com/zytfo/mastodon_trend_analyzer">Github Repository</a></h2>
                 <h2>Authors: <a href="https://github.com/zytfo/">Artur Khaialiev</a>, <a
                     href="https://ufind.univie.ac.at/de/person.html?id=19954">Paul Fuxjäger</a></h2>
-                <h2><a href="http://131.130.125.158/docs/swagger">Swagger Documentation</a></h2>
+                <h2><a href="http://fediscience.cosy.univie.ac.at/docs/swagger">Swagger Documentation</a></h2>
             </div>
             <br/>
             <br/>
