@@ -10,7 +10,9 @@ from app.api.controllers import v1
 from app.api.services.instance_service import update_instances
 from app.api.services.stream_service import listen_mastodon_stream
 from app.api.services.trends_service import update_mastodon_trends
+from app.core.cors import add_cors_headers
 from app.core.database import base_model_session_ctx, async_session
+from app.core.options import setup_options
 
 app = Sanic(__name__)
 
