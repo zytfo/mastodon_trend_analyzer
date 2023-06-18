@@ -1,5 +1,3 @@
-# stdlib
-
 # thirdparty
 from sanic import Sanic
 
@@ -7,6 +5,7 @@ from sanic import Sanic
 import settings
 import nltk
 from app.api.controllers import v1
+from app.api.controllers.favicon_controller import favicon_blueprint
 from app.api.services.instance_service import update_instances
 from app.api.services.stream_service import listen_mastodon_stream
 from app.api.services.trends_service import update_mastodon_trends
@@ -38,6 +37,9 @@ app.register_listener(setup_options, "before_server_start")
 app.register_middleware(add_cors_headers, "response")
 
 app.blueprint(v1)
+
+# handle favicon request
+app.blueprint(favicon_blueprint)
 
 
 @app.middleware("request")
