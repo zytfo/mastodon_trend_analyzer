@@ -1,5 +1,6 @@
 # stdlib
 import re
+from copy import copy
 from datetime import datetime, timedelta
 
 import mastodon
@@ -9,7 +10,7 @@ from sqlalchemy import insert
 
 # project
 import settings
-from app.api.models.status_model import StatusModel
+from app.api.models.status_model import StatusModel, RawStatusModel
 from app.api.services.trends_service import check_if_trend_exist, create_or_update_account, \
     create_or_update_suspicious_trend, check_if_suspicious_trend_exist, get_statuses_by_tag, \
     increment_suspicious_trend_number_of_similar_posts
@@ -30,6 +31,13 @@ def save_status(session: ScopedSession, status: dict):
     session.commit()
 
 
+def save_raw_status(session: ScopedSession, status: dict):
+    status = dict(**status)
+    query = insert(RawStatusModel).values(status)
+    session.execute(query)
+    session.commit()
+
+
 class Listener(mastodon.StreamListener):
 
     def on_update(self, status):
@@ -41,6 +49,14 @@ class Listener(mastodon.StreamListener):
         status.pop("poll", None)
         status.pop("filtered", None)
         status.pop("application", None)
+
+        # store every status
+        with ScopedSession() as session:
+            status_copy = copy(status)
+            status_copy.pop("account", None)
+            status_copy["tags"] = [item["name"] for item in status_copy["tags"]]
+
+            save_raw_status(session=session, status=status_copy)
 
         # check if only tags is more than 0
         if len(status["tags"]) != 0:

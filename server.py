@@ -1,5 +1,6 @@
 # thirdparty
-from sanic import Sanic
+from sanic import Sanic, text
+from sanic_routing.exceptions import NotFound
 
 # project
 import settings
@@ -17,7 +18,6 @@ app = Sanic(__name__)
 
 # add application secret to run on nginx
 app.config.FORWARDED_SECRET = settings.APP_SECRET
-
 
 # update the list of available mastodon instances
 app.add_task(update_instances(session=async_session,
@@ -40,6 +40,11 @@ app.blueprint(v1)
 
 # handle favicon request
 app.blueprint(favicon_blueprint)
+
+
+@app.exception(NotFound)
+async def handle_404(request, exception):
+    return text("Route not found", status=404)
 
 
 @app.middleware("request")
