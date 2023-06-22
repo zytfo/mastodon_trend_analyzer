@@ -41,5 +41,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table("statuses", schema="raw_statuses")
+    op.drop_table("raw_statuses", schema="mastodon_service")
 
